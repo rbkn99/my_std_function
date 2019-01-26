@@ -63,7 +63,7 @@ public:
     function &operator=(const function &other) {
         std::cout << "in const assignment" << std::endl;
         function temp(other);
-        swap(other);
+        swap(temp);
         return *this;
     }
 
@@ -135,15 +135,15 @@ private:
         FunctionT func;
     };
 
-    static const size_t SMALL_OBJECT_SIZE = 16;
+    static const size_t SMALL_OBJECT_SIZE = 32;
 
     //std::aligned_storage<SMALL_OBJECT_SIZE, sizeof(void*)> data;
 
     bool is_small;
 
     union {
-        char small_obj[SMALL_OBJECT_SIZE];
         f_pointer_t p;
+        char small_obj[SMALL_OBJECT_SIZE];
     };
 };
 
