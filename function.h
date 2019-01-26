@@ -40,9 +40,8 @@ public:
     }
 
     template<class F>
-    function(F f) {
+    function(F f): is_small(sizeof(F) <= SMALL_OBJECT_SIZE) {
         std::cout << "in constructor(F)" << std::endl;
-        is_small = (sizeof(F) <= SMALL_OBJECT_SIZE);
         if (is_small) {
             new(small_obj) model<F>(f);
         } else {
@@ -52,11 +51,11 @@ public:
 
     ~function() {
         std::cout << "in destructor" << std::endl;
-        if (is_small) {
-            cast(small_obj)->~base();
+        if (!is_small) {
+            p.reset();
         }
         else {
-            p.reset();
+            cast(small_obj)->~base();
         }
     }
 
@@ -81,7 +80,7 @@ public:
 
     explicit operator bool() const noexcept {
         std::cout << "in bool operator" << std::endl;
-        return is_small || static_cast<bool>(p);
+        return is_small || bool(p);
     }
 
     R operator()(Args ... args) {
