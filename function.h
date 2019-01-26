@@ -25,11 +25,11 @@ public:
 
     function(const function &other) : is_small(other.is_small) {
         std::cout << "in copy constructor" << std::endl;
-        if (is_small) {
-            reinterpret_cast<base*>((char*)other.small_obj)->clone_small(small_obj);
+        if (!is_small) {
+            p = other.p->clone();
         }
         else {
-            p = other.p->clone();
+            cast(other.small_obj)->clone_small(small_obj);
         }
     }
 
@@ -53,7 +53,7 @@ public:
     ~function() {
         std::cout << "in destructor" << std::endl;
         if (is_small) {
-            reinterpret_cast<base*>(small_obj)->~base();
+            cast(small_obj)->~base();
         }
         else {
             p.reset();
@@ -87,7 +87,7 @@ public:
     R operator()(Args ... args) {
         std::cout << "in operator()" << std::endl;
         if (is_small) {
-            return reinterpret_cast<base*>(small_obj)->invoke(args ...);
+            return cast(small_obj)->invoke(args ...);
         }
         assert(p && "Error, callable function is null");
         return p->invoke(args ...);
@@ -135,9 +135,13 @@ private:
         FunctionT func;
     };
 
-    static const size_t SMALL_OBJECT_SIZE = 32;
+    static const size_t SMALL_OBJECT_SIZE = 64;
 
     //std::aligned_storage<SMALL_OBJECT_SIZE, sizeof(void*)> data;
+
+    base* cast(const char* obj) {
+        return reinterpret_cast<base*>(const_cast<char*>(obj));
+    }
 
     bool is_small;
 
